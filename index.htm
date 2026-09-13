@@ -1,65 +1,171 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mon Mini ChatGPT</title>
+    <title>Mon Assistant IA - Style ChatGPT</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- FontAwesome pour les icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-slate-900 text-slate-100 h-screen flex flex-col justify-between">
+<body class="bg-gray-900 text-gray-100 h-full flex flex-col font-sans">
 
     <!-- En-tête -->
-    <header class="p-4 bg-slate-950 border-b border-slate-800 text-center font-bold text-xl text-indigo-400">
-        🤖 Mon Assistant IA
+    <header class="bg-gray-950 border-b border-gray-800 p-4 flex items-center justify-between shadow-md">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-lg shadow">
+                <i class="fa-solid fa-robot"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg text-white">Assistant IA</h1>
+                <p class="text-xs text-emerald-400 flex items-center gap-1">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Prêt à discuter
+                </p>
+            </div>
+        </div>
+        <!-- Bouton pour configurer la clé API -->
+        <button onclick="configurerCle()" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-2 rounded-lg border border-gray-700 transition cursor-pointer">
+            <i class="fa-solid fa-key mr-1"></i> Clé API
+        </button>
     </header>
 
     <!-- Zone de discussion -->
-    <main id="chatContainer" class="flex-grow p-4 overflow-y-auto max-w-2xl w-true mx-auto space-y-4">
-        <div class="flex justify-start">
-            <div class="bg-slate-800 p-3 rounded-2xl max-w-md text-slate-200">
-                Bonjour ! Comment puis-je t'aider aujourd'hui ?
+    <main id="chatContainer" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 max-w-3xl w-full mx-auto">
+        <!-- Message de bienvenue -->
+        <div class="flex items-start space-x-4">
+            <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-sm shrink-0">
+                <i class="fa-solid fa-robot"></i>
+            </div>
+            <div class="bg-gray-800 border border-gray-700/50 p-4 rounded-2xl max-w-xl text-gray-200 shadow-sm leading-relaxed">
+                Bonjour ! Configure ta clé API en haut à droite, puis pose-moi n'importe quelle question pour commencer.
             </div>
         </div>
     </main>
 
-    <!-- Barre de saisie -->
-    <footer class="p-4 bg-slate-950 border-t border-slate-800">
-        <div class="max-w-2xl mx-auto flex gap-2">
-            <input type="text" id="userInput" placeholder="Écris ton message..." class="flex-grow bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-500">
-            <button onclick="envoyerMessage()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6 rounded-lg transition duration-200 cursor-pointer">
-                Envoyer
+    <!-- Zone de saisie -->
+    <footer class="bg-gray-950 border-t border-gray-800 p-4 shadow-lg">
+        <div class="max-w-3xl mx-auto flex items-center gap-3">
+            <input type="text" id="userInput" placeholder="Écris ton message ici..." 
+                class="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-3.5 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+            <button onclick="envoyerMessage()" id="sendButton" 
+                class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-5 py-3.5 rounded-xl transition duration-200 flex items-center justify-center shadow-lg shadow-indigo-600/20 cursor-pointer">
+                <i class="fa-solid fa-paper-plane"></i>
             </button>
         </div>
+        <p class="text-center text-xs text-gray-500 mt-2">L'IA peut générer des erreurs. Vérifiez les informations importantes.</p>
     </footer>
 
-    <!-- Logique du Chat -->
+    <!-- Script de logique -->
     <script>
-        function envoyerMessage() {
+        let apiKey = localStorage.getItem('gemini_api_key') || "";
+
+        function configurerCle() {
+            const nouvelleCle = prompt("Entre ta clé API Google Gemini (disponible gratuitement sur Google AI Studio) :", apiKey);
+            if (nouvelleCle !== null) {
+                apiKey = nouvelleCle.trim();
+                localStorage.setItem('gemini_api_key', apiKey);
+                alert("Clé enregistrée avec succès !");
+            }
+        }
+
+        async function envoyerMessage() {
             const input = document.getElementById('userInput');
             const texte = input.value.trim();
             if (!texte) return;
 
+            if (!apiKey) {
+                alert("Veuillez d'abord configurer votre clé API en haut à droite !");
+                configurerCle();
+                if (!apiKey) return;
+            }
+
             const chatContainer = document.getElementById('chatContainer');
 
             // 1. Afficher le message de l'utilisateur
-            const userBubble = document.createElement('div');
-            userBubble.className = "flex justify-end";
-            userBubble.innerHTML = `<div class="bg-indigo-600 text-white p-3 rounded-2xl max-w-md">${texte}</div>`;
-            chatContainer.appendChild(userBubble);
-
+            const userDiv = document.createElement('div');
+            userDiv.className = "flex items-start justify-end space-x-4 space-x-reverse";
+            userDiv.innerHTML = `
+                <div class="bg-indigo-600 text-white p-4 rounded-2xl max-w-xl shadow-sm leading-relaxed">
+                    ${escapeHtml(texte)}
+                </div>
+                <div class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-white text-sm shrink-0">
+                    <i class="fa-solid fa-user"></i>
+                </div>`;
+            chatContainer.appendChild(userDiv);
             input.value = "";
             chatContainer.scrollTop = chatContainer.scrollHeight;
 
-            // 2. Simuler une réponse de l'IA (ou connecter une vraie API de modèle de langage)
-            setTimeout(() => {
-                const aiBubble = document.createElement('div');
-                aiBubble.className = "flex justify-start";
-                aiBubble.innerHTML = `<div class="bg-slate-800 text-slate-200 p-3 rounded-2xl max-w-md">C'est une excellente question ! Pour l'instant, je suis une interface de test. Pour avoir de vraies réponses intelligentes, il faudrait connecter ce code à une API comme celle d'OpenAI ou de Google Gemini.</div>`;
-                chatContainer.appendChild(aiBubble);
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-            }, 1000);
+            // 2. Afficher l'indicateur de chargement
+            const loadingId = "loading-" + Date.now();
+            const loadingDiv = document.createElement('div');
+            loadingDiv.id = loadingId;
+            loadingDiv.className = "flex items-start space-x-4";
+            loadingDiv.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-sm shrink-0">
+                    <i class="fa-solid fa-robot"></i>
+                </div>
+                <div class="bg-gray-800 border border-gray-700/50 p-4 rounded-2xl text-gray-400 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i> L'IA réfléchit...
+                </div>`;
+            chatContainer.appendChild(loadingDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            try {
+                // 3. Appel de l'API Google Gemini
+                const reponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: texte }] }]
+                    })
+                });
+
+                const data = await reponse.json();
+                document.getElementById(loadingId).remove();
+
+                if (data.candidates && data.candidates[0].content) {
+                    const texteReponse = data.candidates[0].content.parts[0].text;
+
+                    // 4. Afficher la réponse de l'IA
+                    const aiDiv = document.createElement('div');
+                    aiDiv.className = "flex items-start space-x-4";
+                    aiDiv.innerHTML = `
+                        <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-sm shrink-0">
+                            <i class="fa-solid fa-robot"></i>
+                        </div>
+                        <div class="bg-gray-800 border border-gray-700/50 p-4 rounded-2xl max-w-xl text-gray-200 shadow-sm leading-relaxed whitespace-pre-wrap">
+                            ${escapeHtml(texteReponse)}
+                        </div>`;
+                    chatContainer.appendChild(aiDiv);
+                } else {
+                    throw new Error("Réponse invalide de l'API");
+                }
+
+            } catch (error) {
+                document.getElementById(loadingId).remove();
+                const errDiv = document.createElement('div');
+                errDiv.className = "flex items-start space-x-4";
+                errDiv.innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center text-white text-sm shrink-0">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div class="bg-red-950/50 border border-red-800 p-4 rounded-2xl text-red-200 max-w-xl">
+                        Une erreur est survenue. Vérifiez que votre clé API est valide.
+                    </div>`;
+                chatContainer.appendChild(errDiv);
+            }
+
+            chatContainer.scrollTop = chatContainer.scrollHeight;
         }
+
+        function escapeHtml(text) {
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        document.getElementById('userInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') envoyerMessage();
+        });
     </script>
 </body>
 </html>
