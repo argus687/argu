@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Mini ChatGPT</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 h-screen flex flex-col justify-between">
+
+    <!-- En-tête -->
+    <header class="p-4 bg-slate-950 border-b border-slate-800 text-center font-bold text-xl text-indigo-400">
+        🤖 Mon Assistant IA
+    </header>
+
+    <!-- Zone de discussion -->
+    <main id="chatContainer" class="flex-grow p-4 overflow-y-auto max-w-2xl w-true mx-auto space-y-4">
+        <div class="flex justify-start">
+            <div class="bg-slate-800 p-3 rounded-2xl max-w-md text-slate-200">
+                Bonjour ! Comment puis-je t'aider aujourd'hui ?
+            </div>
+        </div>
+    </main>
+
+    <!-- Barre de saisie -->
+    <footer class="p-4 bg-slate-950 border-t border-slate-800">
+        <div class="max-w-2xl mx-auto flex gap-2">
+            <input type="text" id="userInput" placeholder="Écris ton message..." class="flex-grow bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-500">
+            <button onclick="envoyerMessage()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6 rounded-lg transition duration-200 cursor-pointer">
+                Envoyer
+            </button>
+        </div>
+    </footer>
+
+    <!-- Logique du Chat -->
+    <script>
+        function envoyerMessage() {
+            const input = document.getElementById('userInput');
+            const texte = input.value.trim();
+            if (!texte) return;
+
+            const chatContainer = document.getElementById('chatContainer');
+
+            // 1. Afficher le message de l'utilisateur
+            const userBubble = document.createElement('div');
+            userBubble.className = "flex justify-end";
+            userBubble.innerHTML = `<div class="bg-indigo-600 text-white p-3 rounded-2xl max-w-md">${texte}</div>`;
+            chatContainer.appendChild(userBubble);
+
+            input.value = "";
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            // 2. Simuler une réponse de l'IA (ou connecter une vraie API de modèle de langage)
+            setTimeout(() => {
+                const aiBubble = document.createElement('div');
+                aiBubble.className = "flex justify-start";
+                aiBubble.innerHTML = `<div class="bg-slate-800 text-slate-200 p-3 rounded-2xl max-w-md">C'est une excellente question ! Pour l'instant, je suis une interface de test. Pour avoir de vraies réponses intelligentes, il faudrait connecter ce code à une API comme celle d'OpenAI ou de Google Gemini.</div>`;
+                chatContainer.appendChild(aiBubble);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
